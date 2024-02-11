@@ -7,17 +7,11 @@
 #    Roll Number 02                                                                             |
 #-----------------------------------------------------------------------------------------
 #--------------Header Section with all definitions of functions -------------------------
-
 import mysql.connector
 import sqlite3
-items = []
-while True:
-    display = input('Press enter to continue.')
-    print('------------------Welcome to the supermarket------------------')
-    print('1. View items\n2. Add items for sale\n3. Purchase items\n4. Search items \n5. Edit items\n6. Exit')
-    choice = input('Enter the number of your choice : ')
+
 #-----------------1. View all products avalable in the Super Market---------------------
-    if choice == '1' :
+def view_products():
         cnx = mysql.connector.connect(host='localhost',
                                          database='grocery',
                                          user='root',
@@ -41,16 +35,17 @@ while True:
             print ( row[3], end='\t')
             print ( row[4], end='\t')
             print('')
+
 #-----------------2. Add new products for Sale in the Super Market--------------------
-    if choice == '2' :
+def add_products():
         print('------------------Add items------------------')
         print('To add an item fill in the form')
         print("Enter name")
         name=str(input())
         print("Enter Unit of measure")
-        uom1=str(input())
+        uom=str(input())
         print("Enter price")
-        pri=str(input())
+        price=str(input())
         print("Enter quantity")
         qty=str(input())
         cnx = mysql.connector.connect(host='localhost',
@@ -61,7 +56,7 @@ while True:
         
         cursor = cnx.cursor()
         
-        cnx.cursor().execute("INSERT INTO `grocery`.`itemtable` ( productname, uom, price, quantity) VALUES ( '"+name+"', '"+uom1+"', '"+pri+"', '"+qty+"');")
+        cnx.cursor().execute("INSERT INTO `grocery`.`itemtable` ( productname, uom, price, quantity)       VALUES ( '"+name+"', '"+uom+"', '"+price+"', '"+qty+"');")
         cnx.commit()
         cnx = mysql.connector.connect(host='localhost',
                                          database='grocery',
@@ -72,18 +67,25 @@ while True:
         sqlite_select_query = """SELECT * from grocery.itemtable"""
         cursor.execute(sqlite_select_query)
         records = cursor.fetchall()
-        print("id name unit of measure price quantity")
+        print( "id", end='\t')
+        print( "Product", end='\t')
+        print( "unit", end='\t')
+        print( "price", end='\t')
+        print( "quantity", end='\t')
+        print("")
+        print("-------------------------------------------")
+
         for row in records:
-            print( row[0], end='   ')
-            print(row[1], end='   ')
-            print( row[2], end='   ')
-            print ( row[3], end='   ')
-            print ( row[4], end='   ')
+            print( row[0], end='\t')
+            print(row[1], end='\t')
+            print( row[2], end='\t')
+            print ( row[3], end='\t')
+            print ( row[4], end='\t')
             print('')
         
 #-----------------3. for Customer to Purchase products from the Super Market--------------------
-    if choice == '3' :
-            print('------------------purchase items------------------')
+def purchase_products():
+            print('------------------Purchase Products------------------')
             cnx = mysql.connector.connect(host='localhost',
                                          database='grocery',
                                          user='root',
@@ -94,16 +96,17 @@ while True:
             sqlite_select_query = """SELECT * from grocery.itemtable"""
             cursor.execute(sqlite_select_query)
             records = cursor.fetchall()
-            print (records)
-            print("Id Item Unit of measure")
+            print( "id", end='\t')
+            print( "Product", end='\t')
+            print( "unit", end='\t')
+            print( "price", end='\t')
+            print('')
             amount=int(0)
             for row in records:
-                
-                print( row[0], end=' ')
-                print(row[1], end=' ')
-                print( row[2], end=' ')
-                print ( row[3], end=' ')
-                print ( row[4], end=' ')
+                print( row[0], end='\t')
+                print(row[1], end='\t')
+                print( row[2], end='\t')
+                print ( row[3], end='\t')
                 print ("enter quantity", end=' ')
                 x=int(input())
                 print('')
@@ -112,9 +115,11 @@ while True:
                 if ( row[4]<x):
                     print('item out of stock.')
                     break
-            print(amount)
+            print ("your total bill amount is Rs." +str(amount))
+            print ("Please pay this amount at the checkout counter")       
+
 #-----------------4. for Customer to search the availbility of products in the Super Market--------------------
-    if choice == '4' :
+def search_product():
         print('------------------Enter item to be searched------------------')
         
         find_item = str(input())
@@ -127,54 +132,105 @@ while True:
         sqlite_select_query = "SELECT * from grocery.itemtable where productname = '"+find_item+"'"
         cursor1.execute(sqlite_select_query)
         records = cursor1.fetchall()
-        print(sqlite_select_query)
-        print(records)
-        print( "id", end='\t')
-        print( "Product", end='\t')
-        print( "unit", end='\t')
-        print( "price", end='\t')
-        print( "quantity", end='\t')
-        print("")
-        print("-------------------------------------------")
-
-
-
-
-
-
-
-
-
-                
+        if len(records) !=0:
+            
+            print( "id", end='\t')
+            print( "Product", end='\t')
+            print( "unit", end='\t')
+            print( "price", end='\t')
+            print( "quantity", end='\t')
+            print("")
+            print("-------------------------------------------")
+            print(records)
+        else:
+            print("Product Not Available")
+        
 #-----------------for the admin to Change or Modify product details available in the Super Market-------------            
-    if choice == '5' :
+def edit_product():
         print('------------------edit items------------------')
-        item_name = input('Enter the name of the item that you want to edit : ')
-        for item in items:
-            if item_name.lower() == item['name'].lower():
-                print('Here are the current details of ' + item_name)
-                print(item)
-                item['name'] = input('Item name : ')
-                while True:
-                    try:
-                        item['quantity'] = int(input('Item quantity : '))
-                        break
-                    except ValueError:
-                        print('Quantity should only be in digits')
-                while True:
-                    try:
-                        item['price'] = int(input('Price $ : '))
-                        break
-                    except ValueError:
-                        print('Price should only be in digits')
-                print('Item has been successfully updated.')
-                print(item)
-            else:
-                print('Item not found')
+        print('Enter the name of the item that you want to edit : ')
+        edit_item = str(input())
+        cnx = mysql.connector.connect(host='localhost',
+                                         database='grocery',
+                                         user='root',
+                                         password='Rootpw1234!')
+ 
+        cursor1 = cnx.cursor()
+        sqlite_select_query = "SELECT * from grocery.itemtable where productname = '"+edit_item+"'"
+        cursor1.execute(sqlite_select_query)
+        records = cursor1.fetchall()
+        if len(records) !=0:
+            print( "id", end='\t')
+            print( "Product", end='\t')
+            print( "unit", end='\t')
+            print( "price", end='\t')
+            print( "quantity", end='\t')
+            print("")
+            print("-------------------------------------------")
+            print(records)
+            print('Enter the new price : ', end=' ')
+            price_item = str(input())
+            print('Enter the new quantity : ', end=' ')
+            quantity_item = str(input())
+            
+            cursor2 = cnx.cursor()
+            sqlite_modify_query = "UPDATE grocery.itemtable SET price = '"+price_item+"', quantity = '"+quantity_item+"' where productname = '"+edit_item+"'"
+            cursor2.execute(sqlite_modify_query)
+            cnx.commit()
+            cnx = mysql.connector.connect(host='localhost',
+                                         database='grocery',
+                                         user='root',
+                                         password='Rootpw1234!')
+ 
+            cursor = cnx.cursor()
+            sqlite_select_query = """SELECT * from grocery.itemtable"""
+            cursor.execute(sqlite_select_query)
+            records = cursor.fetchall()
+            print( "id", end='\t')
+            print( "Product", end='\t')
+            print( "unit", end='\t')
+            print( "price", end='\t')
+            print( "quantity", end='\t')
+            print("")
+            print("-------------------------------------------")
+
+            for row in records:
+                print( row[0], end='\t')
+                print(row[1], end='\t')
+                print( row[2], end='\t')
+                print ( row[3], end='\t')
+                print ( row[4], end='\t')
+                print('')
+        
+
+        else:
+            print("Product Not Available")
+        
+
                 
-    if choice == '6' :
+#----------------- Main Section for grocery management-----------------------                
+
+while True:
+    display = input('Press enter to continue.')
+    print('------------------Welcome to the supermarket------------------')
+    print('1. View items\n2. Add items for sale\n3. Purchase items\n4. Search items \n5. Edit items\n6. Exit')
+    choice = int(input('Enter the number of your choice : '))
+
+    if choice == 1 :
+        view_products()
+    if choice == 2 :
+        add_products()
+    if choice == 3 :
+        purchase_products()
+    if choice == 4 :
+        search_product()
+    if choice == 5 :
+        edit_product()
+    if choice == 6 :
         print('------------------exited------------------')
         break
-
-    if(choice!=1 or 2 or 3 or 4 or 5 or 6): 
+    if(choice >6 or choice <1): 
          print('You entered an invalid option')
+
+#----------------- End of Main Section for grocery management---------------------                
+
